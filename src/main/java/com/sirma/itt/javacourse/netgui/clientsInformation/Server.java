@@ -1,6 +1,7 @@
 package com.sirma.itt.javacourse.netgui.clientsInformation;
 
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -17,7 +18,8 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 /**
  * The server-side application maintains a list with all connected clients and
@@ -33,7 +35,7 @@ public final class Server {
 	private PrintWriter out = null;
 	private int numberOfClients;
 	private String message;
-	private static JLabel infoLabel = null;
+	private static JTextArea logBox = null;
 	private ServerGUI gui;
 
 	/**
@@ -155,44 +157,44 @@ public final class Server {
 		 */
 		private static final long serialVersionUID = 1L;
 		private JButton stopButton;
+		private JScrollPane scrollPane = null;
 
 		/**
-		 * Constrcucts the interface.
+		 * Constructs the interface.
 		 */
 		public ServerGUI() {
 			setTitle("Server application");
 			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-			setLayout(null);
-			setSize(new Dimension(512, 200));
+			setLayout(new FlowLayout(FlowLayout.LEADING, 6, 6));
+			setSize(new Dimension(550, 250));
 			setResizable(false);
-			createInfoField();
+			createScrollPane();
 			createStopButton();
-			this.getContentPane().add(infoLabel);
+			this.getContentPane().add(scrollPane);
 			this.getContentPane().add(stopButton);
 			setVisible(true);
 		}
 
 		/**
-		 * Logs the given message in the server GUI panel. Includes the current
-		 * time in the log.
+		 * Logs the given message in the server GUI panel. Includes the current time in the log.
 		 * 
 		 * @param msg
 		 *            is the message to log
 		 */
 		public void log(String msg) {
-			infoLabel.setText(infoLabel.getText() + "<br>|"
-					+ new SimpleDateFormat("HH:mm:ss").format(new Date())
-					+ "| " + msg);
+			logBox.append("\n|" + new SimpleDateFormat("HH:mm:ss").format(new Date()) + "| " + msg);
 		}
 
 		/**
-		 * Creates the text label that will show the sevrer activity.
+		 * Creates the text label that will show the server activity.
 		 */
-		private void createInfoField() {
-			infoLabel = new JLabel("<html>Server activity log:");
-			infoLabel.setBounds(0, 0, 300, 200);
-			infoLabel.setBorder(BorderFactory.createLoweredBevelBorder());
-			infoLabel.setVerticalAlignment(JLabel.TOP);
+		private void createScrollPane() {
+			logBox = new JTextArea(5, 30);
+			logBox.setBorder(BorderFactory.createLoweredBevelBorder());
+			logBox.setEditable(false);
+			logBox.append("Server activity log:");
+			scrollPane = new JScrollPane(logBox);
+			scrollPane.setPreferredSize(new Dimension(400, 200));
 		}
 
 		/**
@@ -200,7 +202,7 @@ public final class Server {
 		 */
 		private void createStopButton() {
 			stopButton = new JButton("Stop server");
-			stopButton.setBounds(350, 64, 100, 50);
+			stopButton.setPreferredSize(new Dimension(100, 50));
 			stopButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -221,4 +223,5 @@ public final class Server {
 			});
 		}
 	}
+
 }

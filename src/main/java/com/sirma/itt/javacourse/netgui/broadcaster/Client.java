@@ -29,7 +29,6 @@ public class Client extends Thread {
 	private static ClientGUI gui = null;
 	private MulticastSocket socket = null;
 	private InetAddress address;
-	private final int port = 8888;
 	private final Map<Integer, InetAddress> availableChannels = new HashMap<Integer, InetAddress>();
 
 	/**
@@ -42,11 +41,54 @@ public class Client extends Thread {
 			availableChannels.put(3, InetAddress.getByName("224.1.3.3"));
 			// connect to channel 1 by default
 			address = availableChannels.get(1);
-			socket = new MulticastSocket(port);
+			// set the multicats socket to the first available port in the range
+			getAvailablePortRange(7000, 7020);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		gui = new ClientGUI(this);
+	}
+
+	/**
+	 * Checks if the given port is available to use and temporarily set the
+	 * client multicast socket to it.
+	 * 
+	 * @param port
+	 *            is the port to check
+	 * @return true if the port is available to use
+	 * @throws IOException
+	 *             if problem with the I/O
+	 */
+	private boolean isPortAvailable(int port) throws IOException {
+		try {
+			socket = new MulticastSocket(port);
+			socket.setReuseAddress(false);
+			return true;
+		} catch (IOException e) {
+			return false;
+		}
+	}
+
+	/**
+	 * Gets the first available port in the given range and set the client
+	 * multicast socket to it.
+	 * 
+	 * @param min
+	 *            is the minimal port range
+	 * @param max
+	 *            is the maximal port range
+	 * @return the first available port in the given range, or -1 if non
+	 * @throws IOException
+	 *             if problem wit hte I/O
+	 */
+	private int getAvailablePortRange(int min, int max)
+			throws IOException {
+		for (int i = min; i <= max; i++) {
+			if (isPortAvailable(i)) {
+				return i;
+			}
+		}
+		return -1;
 	}
 
 	/**

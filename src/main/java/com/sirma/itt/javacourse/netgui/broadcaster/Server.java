@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -25,28 +26,73 @@ import javax.swing.JTextField;
 /**
  * The server-side application.
  */
-public class Server {
+public final class Server {
 	private Sender sender = null;
 	private final List<Integer> currentChannels = new ArrayList<Integer>();
-	private final int port = 8888;
+	private int port;
 
 	/**
 	 * Constructs the GUI and starts the server.
 	 */
-	public Server() {
+	private Server() {
 		// channel 1 is added by default
 		currentChannels.add(1);
 		// create the sender that manages the availableChannels
 		sender = new Sender();
-		runServer();
+		// set the port to the first available in the range
+		try {
+			port = getAvailablePortRange(7000, 7020);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		new ServerGUI();
 	}
 
 	/**
-	 * The entry point for the server app.
+	 * Checks if the given port is available to use.
+	 * 
+	 * @param port
+	 *            is the port to check
+	 * @return true if the port is available to use
+	 * @throws IOException
+	 *             if problem with the I/O
 	 */
-	public void runServer() {
-		new ServerGUI();
+	private boolean isPortAvailable(int port) throws IOException {
+		ServerSocket socket = null;
+		try {
+			socket = new ServerSocket(port);
+			socket.setReuseAddress(true);
+			return true;
+		} catch (IOException e) {
+		} finally {
+			if (socket != null) {
+				socket.close();
+			}
+		}
+		return false;
 	}
+
+	/**
+	 * Gets the first available port in the given range.
+	 * 
+	 * @param min
+	 *            is the minimal port range
+	 * @param max
+	 *            is the maximal port range
+	 * @return the first available port in the given range, or -1 if non
+	 * @throws IOException
+	 *             if problem wit hte I/O
+	 */
+	private int getAvailablePortRange(int min, int max)
+			throws IOException {
+		for (int i = min; i <= max; i++) {
+			if (isPortAvailable(i)) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
 
 	/**
 	 * The entry point.
@@ -59,9 +105,8 @@ public class Server {
 	}
 
 	/**
-	 * The class that decides which availableChannels to send the message to.
-	 * Contains a hashmap with all available addresses where the message could
-	 * be sent.
+	 * The class that decides which channels to send the message to. Contains a
+	 * hashmap with all available addresses where the message could be sent.
 	 */
 	private class Sender {
 		private DatagramSocket socket = null;
@@ -84,7 +129,7 @@ public class Server {
 		}
 
 		/**
-		 * Sends the message to all currently chosen availableChannels.
+		 * Sends the message to all currently chosen channels.
 		 * 
 		 * @param message
 		 *            is the message to send.
@@ -152,6 +197,9 @@ public class Server {
 			stopButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
+					if ("".equals(textBox.getText())) {
+						return;
+					}
 					try {
 						sender.sendMessage(textBox.getText());
 						textBox.setText("");

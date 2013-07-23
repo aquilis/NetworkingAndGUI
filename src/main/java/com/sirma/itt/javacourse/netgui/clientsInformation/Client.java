@@ -1,6 +1,7 @@
 package com.sirma.itt.javacourse.netgui.clientsInformation;
 
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -14,7 +15,8 @@ import java.util.Date;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 /**
  * The client-side application.
@@ -22,7 +24,7 @@ import javax.swing.JLabel;
 public final class Client extends Thread {
 	private static BufferedReader in;
 	private static Socket clientSocket = null;
-	private static JLabel infoLabel = null;
+	private static JTextArea logBox;
 	private static ClientGUI gui = null;
 
 	/**
@@ -129,6 +131,7 @@ public final class Client extends Thread {
 		private static final long serialVersionUID = 1L;
 		private JButton joinButton;
 		private Thread parent = null;
+		private JScrollPane scrollPane = null;
 
 		/**
 		 * Constructs the GUI.
@@ -141,12 +144,12 @@ public final class Client extends Thread {
 			this.parent = parent;
 			setTitle("Client application");
 			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-			setLayout(null);
+			setLayout(new FlowLayout(FlowLayout.LEADING, 6, 6));
 			setSize(new Dimension(600, 200));
 			setResizable(false);
-			createInfoField();
+			createscrollPane();
 			createJoinButton();
-			this.getContentPane().add(infoLabel);
+			this.getContentPane().add(scrollPane);
 			this.getContentPane().add(joinButton);
 			setVisible(true);
 		}
@@ -159,7 +162,7 @@ public final class Client extends Thread {
 		 *            is the message to log
 		 */
 		public void log(String msg) {
-			infoLabel.setText(infoLabel.getText() + "<br>|"
+			logBox.append("\n|"
 					+ new SimpleDateFormat("HH:mm:ss").format(new Date())
 					+ "| " + msg);
 		}
@@ -167,11 +170,13 @@ public final class Client extends Thread {
 		/**
 		 * Creates the text label that will show the client activity.
 		 */
-		private void createInfoField() {
-			infoLabel = new JLabel("<html>Client activity log:");
-			infoLabel.setBounds(0, 0, 400, 200);
-			infoLabel.setBorder(BorderFactory.createLoweredBevelBorder());
-			infoLabel.setVerticalAlignment(JLabel.TOP);
+		private void createscrollPane() {
+			logBox = new JTextArea(5, 30);
+			logBox.setBorder(BorderFactory.createLoweredBevelBorder());
+			logBox.setEditable(false);
+			logBox.append("Client activity log:");
+			scrollPane = new JScrollPane(logBox);
+			scrollPane.setPreferredSize(new Dimension(430, 140));
 		}
 
 		/**
@@ -179,7 +184,7 @@ public final class Client extends Thread {
 		 */
 		private void createJoinButton() {
 			joinButton = new JButton("Join");
-			joinButton.setBounds(450, 64, 100, 50);
+			joinButton.setPreferredSize(new Dimension(100, 50));
 			joinButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
